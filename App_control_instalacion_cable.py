@@ -495,7 +495,7 @@ def mostrar_resultados_streamlit(resultados, solver, precision):
 
 
 # ============================================================================
-# APLICACIÓN PRINCIPAL STREAMLIT
+# APLICACIÓN PRINCIPAL STREAMLIT - VERSIÓN CORREGIDA
 # ============================================================================
 def main():
     st.set_page_config(
@@ -529,9 +529,10 @@ def main():
                 help="Distancia horizontal entre anclajes (1 - 2500 m)"
             )
             
+            # CORRECCIÓN: Usar un valor fijo para min_value, no una variable
             length = st.number_input(
                 "Longitud cable [m]",
-                min_value=1.0,
+                min_value=1.0,  # Cambiado de L_span*0.01 a 1.0
                 max_value=2600.0,
                 value=12.8,
                 step=1.0,

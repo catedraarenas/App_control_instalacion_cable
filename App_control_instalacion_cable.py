@@ -572,7 +572,7 @@ def main():
     
     # Área principal
     if calcular:
-        # Validación adicional para asegurar que length > span
+        # Validación para asegurar que length > span
         if length <= span:
             st.error(f"❌ La longitud del cable ({length:.2f} m) debe ser mayor que el span ({span:.2f} m)")
         elif support >= span:
@@ -623,10 +623,10 @@ def main():
         mostrar_resultados_streamlit(resultados, solver, precision)
     
     else:
-        # Mensaje inicial
+        # Mensaje inicial - SIN ALERTAS, solo información neutral
         st.info("👈 Ingresa los parámetros en la barra lateral y haz clic en CALCULAR")
         
-        # Ejemplo visual
+        # Ejemplo visual con métricas informativas
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Rango span", "1 - 2500 m")

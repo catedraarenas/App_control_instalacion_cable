@@ -521,42 +521,42 @@ def main():
         with st.form("parametros_form"):
             span = st.number_input(
                 "Span total [m]",
-                min_value=0.1,
-                max_value=100.0,
+                min_value=1.0,
+                max_value=2500.0,
                 value=12.0,
-                step=0.1,
+                step=1.0,
                 format="%.2f",
-                help="Distancia horizontal entre anclajes"
+                help="Distancia horizontal entre anclajes (1 - 2500 m)"
             )
             
             length = st.number_input(
                 "Longitud cable [m]",
-                min_value=span + 0.01,
-                max_value=200.0,
+                min_value=1.0,
+                max_value=2600.0,
                 value=12.8,
-                step=0.1,
+                step=1.0,
                 format="%.2f",
-                help="Debe ser mayor que el span"
+                help="Debe ser mayor que el span (1 - 2600 m)"
             )
             
             support = st.number_input(
                 "Posición del apoyo [m]",
-                min_value=0.1,
-                max_value=span - 0.01,
+                min_value=1.0,
+                max_value=2500.0,
                 value=4.5,
-                step=0.1,
+                step=1.0,
                 format="%.2f",
-                help="Debe estar entre 0 y el span"
+                help="Debe estar entre 0 y el span (1 - 2500 m)"
             )
             
             diameter = st.number_input(
                 "Diámetro cable [m]",
                 min_value=0.001,
-                max_value=0.5,
+                max_value=2.0,
                 value=0.025,
                 step=0.001,
                 format="%.3f",
-                help="Ej: 0.025 = 25 mm"
+                help="Diámetro del cable (0.001 - 2.0 m)"
             )
             
             calcular = st.form_submit_button("🚀 CALCULAR CATENARIA EXACTA", use_container_width=True)
@@ -572,32 +572,38 @@ def main():
     
     # Área principal
     if calcular:
-        try:
-            with st.spinner("Calculando configuración de equilibrio..."):
-                # Crear solver y resolver
-                solver = ExactCatenarySolver(span, length, support, diameter)
-                resultados = solver.solve(tol=1e-14)
-                precision = solver.verify_precision(resultados)
-                
-                # Guardar en session state para persistencia
-                st.session_state['solver'] = solver
-                st.session_state['resultados'] = resultados
-                st.session_state['precision'] = precision
-                
-                # Mostrar gráficos
-                st.subheader("📊 Visualización")
-                fig = crear_graficos(solver, resultados)
-                st.pyplot(fig)
-                plt.close(fig)  # Liberar memoria
-                
-                # Mostrar resultados numéricos
-                st.divider()
-                st.subheader("📈 Resultados numéricos")
-                mostrar_resultados_streamlit(resultados, solver, precision)
-                
-        except Exception as e:
-            st.error(f"Error en el cálculo: {str(e)}")
-            st.exception(e)
+        # Validación adicional para asegurar que length > span
+        if length <= span:
+            st.error(f"❌ La longitud del cable ({length:.2f} m) debe ser mayor que el span ({span:.2f} m)")
+        elif support >= span:
+            st.error(f"❌ La posición del apoyo ({support:.2f} m) debe ser menor que el span ({span:.2f} m)")
+        else:
+            try:
+                with st.spinner("Calculando configuración de equilibrio..."):
+                    # Crear solver y resolver
+                    solver = ExactCatenarySolver(span, length, support, diameter)
+                    resultados = solver.solve(tol=1e-14)
+                    precision = solver.verify_precision(resultados)
+                    
+                    # Guardar en session state para persistencia
+                    st.session_state['solver'] = solver
+                    st.session_state['resultados'] = resultados
+                    st.session_state['precision'] = precision
+                    
+                    # Mostrar gráficos
+                    st.subheader("📊 Visualización")
+                    fig = crear_graficos(solver, resultados)
+                    st.pyplot(fig)
+                    plt.close(fig)  # Liberar memoria
+                    
+                    # Mostrar resultados numéricos
+                    st.divider()
+                    st.subheader("📈 Resultados numéricos")
+                    mostrar_resultados_streamlit(resultados, solver, precision)
+                    
+            except Exception as e:
+                st.error(f"Error en el cálculo: {str(e)}")
+                st.exception(e)
     
     elif 'resultados' in st.session_state:
         # Recuperar resultados previos
@@ -623,11 +629,11 @@ def main():
         # Ejemplo visual
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Ejemplo típico", "Span = 12 m")
+            st.metric("Rango span", "1 - 2500 m")
         with col2:
-            st.metric("Longitud cable", "12.8 m (7% exceso)")
+            st.metric("Rango longitud", "1 - 2600 m")
         with col3:
-            st.metric("Apoyo en", "x = 4.5 m")
+            st.metric("Rango diámetro", "0.001 - 2.0 m")
 
 
 if __name__ == "__main__":
